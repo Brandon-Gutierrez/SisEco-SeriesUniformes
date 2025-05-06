@@ -1,0 +1,1 @@
+// contenido del archivo: tabs.tsx
