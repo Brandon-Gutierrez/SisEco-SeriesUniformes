@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  base: 'https://Brandon-Gutierrez.github.io/SisEco-SeriesUniformes',
   resolve: {
     alias: {
       '@': '/src',

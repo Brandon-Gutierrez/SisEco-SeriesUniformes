@@ -17,11 +17,14 @@ function App() {
       </main>
       
       <footer className="mt-12 text-center text-gray-800 bg-blue-100 py-4 text-sm rounded-lg">
-        <p>© 2025 - GRUPO 3 = SISTEMAS ECONÓMICOS -  INGENIERÍA EN SISTEMAS - UMSS 
+        <p>© 2025 - GRUPO 3 - SISTEMAS ECONÓMICOS -  INGENIERÍA EN SISTEMAS - UMSS 
+          <br></br>INTEGRANTES: 
           <br></br>GUTIERREZ FAREL BRANDON LUIS
           <br></br>CALUSTRO CRESPO DANA LILI
           <br></br>MEDINA RODRIGUEZ MATEO JHOUSTIN
           <br></br>QUIROZ QUIROZ GIOVANI
+          <br></br>PEÑA CLEMENTE KEVIN 
+          <br></br>RAMIREZ ARANCIBIA FARID
         </p>
       </footer>
     </div>
