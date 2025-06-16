@@ -1,10 +1,8 @@
 import React from 'react';
-import { ArrowRight, ArrowDown } from 'lucide-react';
-import { SERIES_TYPES, TIME_UNITS } from '@/constants/seriesTypes';
-import type { SeriesType, TimeUnit } from '@/constants/seriesTypes';
+import { SERIES_TYPES } from '@/constants/seriesTypes';
 
 interface TimeDiagramProps {
-  seriesType: SeriesType;
+  seriesType: string;
   values: {
     P: string;
     F: string;
@@ -12,7 +10,7 @@ interface TimeDiagramProps {
     n: string;
     k?: string;
   };
-  timeUnit: TimeUnit;
+  timeUnit: string;
 }
 
 const TimeDiagram: React.FC<TimeDiagramProps> = ({ 
@@ -20,6 +18,7 @@ const TimeDiagram: React.FC<TimeDiagramProps> = ({
   values, 
   timeUnit 
 }) => {
+  // Función para parsear valores numéricos de manera segura
   const parseNumber = (value: string, defaultValue = 0): number => {
     const num = parseFloat(value);
     return isNaN(num) ? defaultValue : num;
@@ -44,48 +43,56 @@ const TimeDiagram: React.FC<TimeDiagramProps> = ({
   // Limitar a un máximo razonable para evitar problemas de rendimiento
   const safePeriods = Math.min(totalPeriods, 12);
   
+  // Determinar el período de inicio de pagos
+  const startPeriod = isDeferred ? k : 0;
+  
   // Determinar en qué períodos hay pagos
   const paymentPeriods = Array(safePeriods + 1).fill(false);
   if (A > 0) {
     for (let idx = 0; idx <= safePeriods; idx++) {
       if (isAdvance && idx < n) paymentPeriods[idx] = true;
-      if (isOrdinary && idx > 0 && idx <= n) paymentPeriods[idx] = true;
-      if (isDeferred && idx > k && idx <= k + n) paymentPeriods[idx] = true;
+      if ((isOrdinary || isDeferred) && idx > startPeriod && idx <= startPeriod + n) {
+        paymentPeriods[idx] = true;
+      }
     }
   }
 
   return (
-    <div className="mt-6 p-4 bg-white rounded-xl border border-blue-100 shadow-sm">
+    <div className="p-4 bg-white rounded-xl border border-blue-100 shadow-sm h-full">
       <h3 className="font-semibold text-blue-800 mb-4">Diagrama de Flujo de Caja</h3>
       
-      <div className="relative overflow-x-auto pb-8">
-        {/* Línea de tiempo */}
-        <div className="flex items-start">
+      <div className="overflow-x-auto pb-4">
+        <div className="flex min-w-max justify-center">
           {[...Array(safePeriods + 1)].map((_, idx) => (
-            <div key={idx} className="flex flex-col items-center relative min-w-[80px]">
+            <div key={idx} className="flex flex-col items-center relative mx-2 min-w-[80px]">
+              {/* Línea vertical del período */}
+              <div className="w-0.5 h-16 bg-gray-200 absolute top-0"></div>
+              
               {/* Punto en la línea de tiempo */}
-              <div className={`w-4 h-4 rounded-full ${
+              <div className={`w-6 h-6 rounded-full z-10 flex items-center justify-center ${
                 idx === 0 ? 'bg-blue-600' : 
                 (isDeferred && idx === k) ? 'bg-green-600' : 
                 'bg-gray-400'
-              }`}></div>
+              }`}>
+                <span className="text-white text-xs font-bold">{idx}</span>
+              </div>
               
               {/* Etiquetas principales */}
-              <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-full text-center">
+              <div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-full text-center">
                 {idx === 0 && P > 0 && (
-                  <div className="text-blue-600 font-medium text-sm whitespace-nowrap bg-white px-1 rounded">
+                  <div className="text-blue-600 font-medium text-xs whitespace-nowrap bg-white px-1 rounded">
                     P = {P.toFixed(2)}
                   </div>
                 )}
                 
                 {idx === safePeriods && F > 0 && (
-                  <div className="text-red-600 font-medium text-sm whitespace-nowrap bg-white px-1 rounded">
+                  <div className="text-red-600 font-medium text-xs whitespace-nowrap bg-white px-1 rounded">
                     F = {F.toFixed(2)}
                   </div>
                 )}
                 
                 {isDeferred && idx === k && (
-                  <div className="text-green-600 font-medium text-sm whitespace-nowrap bg-white px-1 rounded">
+                  <div className="text-green-600 font-medium text-xs whitespace-nowrap bg-white px-1 rounded">
                     Inicio pagos
                   </div>
                 )}
@@ -93,9 +100,9 @@ const TimeDiagram: React.FC<TimeDiagramProps> = ({
               
               {/* Flechas de pagos */}
               {paymentPeriods[idx] && (
-                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2">
+                <div className="absolute top-6 left-1/2 transform -translate-x-1/2">
                   <div className="flex flex-col items-center">
-                    <ArrowDown className="text-red-500" size={18} />
+                    <div className="text-red-500 font-bold text-xl">↓</div>
                     <span className="text-red-600 text-xs whitespace-nowrap bg-white px-1 rounded">
                       A = {A.toFixed(2)}
                     </span>
@@ -103,23 +110,22 @@ const TimeDiagram: React.FC<TimeDiagramProps> = ({
                 </div>
               )}
               
-              {/* Línea horizontal */}
-              {idx < safePeriods && (
-                <div className="w-full h-0.5 bg-gray-300 relative mt-2">
-                  <ArrowRight className="absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                </div>
-              )}
-              
               {/* Etiqueta del período */}
-              <div className="absolute -bottom-6 text-xs text-gray-500 whitespace-nowrap bg-white px-1 rounded">
-                {idx === 0 ? '0' : `${idx}${timeUnit === TIME_UNITS.ANNUAL ? 'a' : 'm'}`}
+              <div className="absolute top-20 text-xs text-gray-500 whitespace-nowrap bg-white px-1 rounded text-center">
+                {idx === 0 ? 'Hoy' : `Período ${idx}`}
+                <div className="font-semibold">
+                  {idx === 0 ? '0' : `${idx}${timeUnit === 'años' ? 'a' : 'm'}`}
+                </div>
               </div>
             </div>
           ))}
         </div>
         
+        {/* Línea horizontal del tiempo */}
+        <div className="h-0.5 bg-gray-300 w-full mt-8"></div>
+        
         {/* Leyenda */}
-        <div className="flex flex-wrap gap-4 mt-12 text-sm">
+        <div className="flex flex-wrap gap-4 mt-20 text-sm justify-center">
           <div className="flex items-center">
             <div className="w-4 h-4 bg-blue-600 rounded-full mr-2"></div>
             <span>Valor Presente (P)</span>
@@ -129,7 +135,7 @@ const TimeDiagram: React.FC<TimeDiagramProps> = ({
             <span>Valor Futuro (F)</span>
           </div>
           <div className="flex items-center">
-            <ArrowDown className="text-red-500 mr-2" />
+            <div className="text-red-500 font-bold text-xl mr-2">↓</div>
             <span>Pago (A)</span>
           </div>
           {isDeferred && (
@@ -139,6 +145,27 @@ const TimeDiagram: React.FC<TimeDiagramProps> = ({
             </div>
           )}
         </div>
+      </div>
+      
+      {/* Descripción del diagrama */}
+      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100 text-sm">
+        {isDeferred ? (
+          <p>
+            <strong>Diagrama Diferido:</strong> 
+            {k > 0 ? ` ${k} ${timeUnit === 'años' ? 'años' : 'meses'} de gracia, ` : ' '}
+            luego {n} pagos de {A.toFixed(2)} cada {timeUnit === 'años' ? 'año' : 'mes'}.
+          </p>
+        ) : isAdvance ? (
+          <p>
+            <strong>Diagrama Anticipado:</strong> 
+            {n} pagos de {A.toFixed(2)} al inicio de cada {timeUnit === 'años' ? 'año' : 'mes'}.
+          </p>
+        ) : (
+          <p>
+            <strong>Diagrama Ordinario:</strong> 
+            {n} pagos de {A.toFixed(2)} al final de cada {timeUnit === 'años' ? 'año' : 'mes'}.
+          </p>
+        )}
       </div>
     </div>
   );

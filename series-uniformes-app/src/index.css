@@ -17,3 +17,13 @@ body {
   display: flex;
   flex-direction: column;
 }
+.SelectContent, .TooltipContent {
+  position: fixed !important;
+  z-index: 999999 !important;
+  will-change: transform;
+}
+.card-section {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+}

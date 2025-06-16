@@ -1,17 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './index.css';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+import { ZIndexProvider } from '../src/context/ZIndexContext'
 
-const rootElement = document.getElementById('root');
-
-if (rootElement) {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(
-    <React.StrictMode>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <ZIndexProvider>
       <App />
-    </React.StrictMode>
-  );
-} else {
-  console.error("Element with id 'root' not found");
-}
+    </ZIndexProvider>
+  </React.StrictMode>
+)

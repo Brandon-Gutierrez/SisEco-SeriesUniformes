@@ -22,26 +22,27 @@ export const VARIABLE_DESCRIPTIONS: Record<string, string> = {
   k: 'Períodos de gracia (solo para series diferidas)'
 };
 
-export type FormulaFunction = (...args: number[]) => number;
+type FormulaFunction = (params: {
+  A?: number;
+  i: number;
+  n: number;
+  k?: number;
+  P?: number;
+  F?: number;
+}) => number;
 
 interface SeriesFormulas {
   [key: string]: {
     P: FormulaFunction;
     F: FormulaFunction;
-    A: (params: { 
-      P?: number; 
-      F?: number; 
-      i: number; 
-      n: number; 
-      k?: number 
-    }) => number;
+    A: FormulaFunction;
   };
 }
 
 export const SERIES_FORMULAS: SeriesFormulas = {
   [SERIES_TYPES.ORDINARY]: {
-    P: (A, i, n) => A * (1 - Math.pow(1 + i, -n)) / i,
-    F: (A, i, n) => A * (Math.pow(1 + i, n) - 1) / i,
+    P: ({ A, i, n }) => A! * (1 - Math.pow(1 + i, -n)) / i,
+    F: ({ A, i, n }) => A! * (Math.pow(1 + i, n) - 1) / i,
     A: ({ P, F, i, n }) => {
       if (P !== undefined) {
         return (P * i) / (1 - Math.pow(1 + i, -n));
@@ -52,8 +53,8 @@ export const SERIES_FORMULAS: SeriesFormulas = {
     }
   },
   [SERIES_TYPES.ADVANCE]: {
-    P: (A, i, n) => A * (1 + i) * (1 - Math.pow(1 + i, -n)) / i,
-    F: (A, i, n) => A * (1 + i) * (Math.pow(1 + i, n) - 1) / i,
+    P: ({ A, i, n }) => A! * (1 + i) * (1 - Math.pow(1 + i, -n)) / i,
+    F: ({ A, i, n }) => A! * (1 + i) * (Math.pow(1 + i, n) - 1) / i,
     A: ({ P, F, i, n }) => {
       if (P !== undefined) {
         return (P * i) / ((1 + i) * (1 - Math.pow(1 + i, -n)));
@@ -64,15 +65,15 @@ export const SERIES_FORMULAS: SeriesFormulas = {
     }
   },
   [SERIES_TYPES.DEFERRED]: {
-    P: (A, i, n, k) => A * (1 - Math.pow(1 + i, -n)) / (i * Math.pow(1 + i, k)),
-    F: (A, i, n) => A * (Math.pow(1 + i, n) - 1) / i,
-    A: ({ P, F, i, n, k = 0 }) => {
-      if (P !== undefined) {
+    P: ({ A, i, n, k }) => A! * (1 - Math.pow(1 + i, -n)) / (i * Math.pow(1 + i, k!)),
+    F: ({ A, i, n }) => A! * (Math.pow(1 + i, n) - 1) / i,
+    A: ({ P, F, i, n, k }) => {
+      if (P !== undefined && k !== undefined) {
         return (P * i * Math.pow(1 + i, k)) / (1 - Math.pow(1 + i, -n));
       } else if (F !== undefined) {
         return (F * i) / (Math.pow(1 + i, n) - 1);
       }
-      throw new Error('Se necesita P o F para calcular A');
+      throw new Error('Datos insuficientes para calcular A');
     }
   }
 };
